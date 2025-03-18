@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signUpUser } from "@/firebase/auth/signUp";
 import { useAuth } from "@/context/AuthContext";
+import PasswordStrengthBar from "@/components/PasswordStrengthBar";
 
 export default function SignUpPage() {
     const [email, setEmail] = useState("");
@@ -89,6 +90,7 @@ export default function SignUpPage() {
                                 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                                 required
                             />
+                            <PasswordStrengthBar password={password} />
                         </div>
 
                         <div>

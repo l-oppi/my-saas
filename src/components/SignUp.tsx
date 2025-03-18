@@ -13,7 +13,7 @@ const SignUp = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        const result = await signUpUser(email, password, name, surname, phone);
+        const result = await signUpUser(email, password);
 
         if (result.success) {
             console.log("User created successfully", result.user);
