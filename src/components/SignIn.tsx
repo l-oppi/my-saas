@@ -1,31 +1,68 @@
-import React, { useState } from "react";
-import { googleSignIn, emailSignIn } from "@/firebase/auth/signIn";
+"use client";
+import React, { useState, useEffect } from "react";
+import { emailSignIn, signInWithGoogle } from "@/firebase/auth/signIn";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
+import { auth } from "@/firebase/BaseConfig";
 
 const SignIn = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState<string | null>(null);
+    const [redirect, setRedirect] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
+    const { user, loading } = useAuth();
+    
+    useEffect(() => {
+        const unsubscribe = auth.onAuthStateChanged((user) => {
+            if (user) {
+                router.push("/dashboard");
+            }
+        });
+
+        return unsubscribe;
+    }, [router]);
+
+    useEffect(() => {
+        if (redirect) {
+            router.push('/dashboard');
+        }
+    }, [redirect, router]);
+
+    if (user && !loading) {
+        router.push("/dashboard");
+    }
 
     const handleGoogleSignIn = async () => {
-        const result = await googleSignIn();
+        setIsLoading(true);
+        
+        const result = await signInWithGoogle();
+        
         if (result.success) {
-            router.push("/dashboard");        
+            setTimeout(() => {
+                router.push('/dashboard');
+            }, 0);
         } else {
-            setError(result.error || "Erro ao fazer login");
+            setError(result.error);
         }
+        
+        setIsLoading(false);
     };
 
     const handleEmailSignIn = async (e: React.FormEvent) => {
         e.preventDefault();
         const result = await emailSignIn(email, password);
         if (result.success) {
-            router.push("/dashboard");
+            setRedirect(true);
         } else {
             setError(result.error || "Erro ao fazer login");
         }
     };
+
+    if (loading) {
+        return <div>Carregando...</div>;
+    }
 
     return (
         <div className="p-4 max-w-md mx-auto">
