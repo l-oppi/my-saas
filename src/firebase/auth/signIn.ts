@@ -20,7 +20,6 @@ export const signInWithGoogle = async () => {
             user: result.user
         };
     } catch (error: any) {
-        // Handle specific popup errors
         if (error.code === 'auth/cancelled-popup-request' || 
             error.code === 'auth/popup-closed-by-user') {
             return {
@@ -29,7 +28,6 @@ export const signInWithGoogle = async () => {
             };
         }
         
-        // Handle other errors
         return {
             success: false,
             error: error.message || "Erro ao fazer login com Google"
@@ -42,8 +40,26 @@ export const emailSignIn = async (email: string, password: string) => {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
         return { success: true, user };
-    } catch (error) {
-        console.error("Erro ao fazer login com o email:", error);
-        return { success: false, error: error instanceof Error ? error.message : "Erro desconhecido" };
+    } catch (error: any) {
+        if (error.code === "auth/invalid-credential" || error.code === "auth/wrong-password") {
+            return {
+                success: false,
+                error: "E-mail ou senha inválidos"
+            };
+        } else if (error.code === "auth/user-not-found") {
+            return {
+                success: false,
+                error: "E-mail não encontrado"
+            };
+        } else if (error.code === "auth/too-many-requests") {
+            return {
+                success: false,
+                error: "Muitas tentativas de login. Tente novamente mais tarde."
+            };
+        }
+        return {
+            success: false,
+            error: error.message || "Erro ao fazer login com o email"
+        };
     }
 };
