@@ -23,7 +23,7 @@ const SignUp = () => {
 
     return (
         <div className="p-4 max-2-md mx-auto">
-            <h1 className="text-2x1 mb-4">Sign Up</h1>
+            <h1 className="text-2xl mb-4">Sign Up</h1>
             <form onSubmit={handleSubmit} className="space-y-4">
                 <input
                     type="text"
