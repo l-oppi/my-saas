@@ -12,11 +12,65 @@ This is a personal project built to learn and practice modern web development te
 
 ## Features
 
-- User Authentication (Email/Password & Google Sign-in)
-- Protected Routes
-- Responsive Design
-- TypeScript Integration
-- Modern UI/UX
+### Authentication & User Management
+- Email/Password Authentication
+- Google Sign-in Integration
+- Protected Routes with Auth Context
+- User Profile Management
+- Two-step Registration Process:
+  1. Basic Account Creation
+  2. Required Profile Completion
+
+### Security Features
+- Password Strength Indicator
+- Form Validation
+- Error Handling for Firebase Auth
+- Protected Route Management
+- Secure Session Management
+
+### Profile Management
+- Complete Profile Flow
+- User Avatar with Initials Fallback
+- User Data Management in Firestore
+- Profile Completion Status Tracking
+
+## Project Structure
+
+```
+src/
+├── app/                 # Next.js App Router pages
+│   ├── dashboard/      # Dashboard page
+│   ├── signin/         # Sign-in page
+│   └── signup/         # Sign-up and profile completion
+├── components/         # Reusable React components
+│   ├── Profile/        # User profile components
+│   ├── Auth/          # Authentication components
+│   └── UI/            # Common UI components
+├── context/           # React Context providers
+│   └── AuthContext    # Authentication state management
+├── firebase/          # Firebase configuration & utils
+│   ├── auth/          # Authentication functions
+│   └── BaseConfig     # Firebase initialization
+├── interfaces/        # TypeScript interfaces
+└── utils/            # Utility functions
+```
+
+## Authentication Flow
+
+1. **Initial Sign Up**
+   - User creates account with email/password or Google
+   - Basic account information stored in Firebase Auth
+   - Initial Firestore document created
+
+2. **Profile Completion**
+   - Mandatory profile completion step
+   - Additional user information collected
+   - Profile marked as complete in Firestore
+
+3. **Protected Routes**
+   - Routes protected based on authentication status
+   - Additional protection based on profile completion
+   - Automatic redirects to appropriate pages
 
 ## Getting Started
 
@@ -30,6 +84,8 @@ yarn install
 
 3. Set up your Firebase configuration:
    - Create a Firebase project
+   - Enable Authentication (Email/Password and Google providers)
+   - Set up Firestore Database
    - Add your Firebase config to `src/firebase/BaseConfig.ts`
 
 4. Run the development server:
@@ -41,26 +97,25 @@ yarn dev
 
 5. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-## Learning Objectives
+## Development Practices
 
-This project was created to:
-- Master Next.js App Router and its features
-- Learn Firebase Authentication and Firestore
-- Practice TypeScript in a real-world context
-- Understand modern React patterns and hooks
-- Implement responsive design with Tailwind CSS
-- Learn about web security best practices
+- TypeScript for type safety
+- Component-based architecture
+- Context API for state management
+- Custom hooks for reusable logic
+- Error boundary implementation
+- Responsive design principles
+- Progressive enhancement
+- Performance optimization
 
-## Project Structure
+## Security Considerations
 
-```
-src/
-├── app/              # Next.js App Router pages
-├── components/       # Reusable React components
-├── context/         # React Context providers
-├── firebase/        # Firebase configuration
-└── interfaces/      # TypeScript interfaces
-```
+- Firebase Authentication best practices
+- Protected route implementation
+- Form validation and sanitization
+- Error handling and user feedback
+- Secure data management
+- Environment variable usage
 
 ## Contributing
 
