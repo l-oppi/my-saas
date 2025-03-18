@@ -25,7 +25,7 @@ const SignIn = () => {
                 router.push('/dashboard');
             }
         } else {
-            setError(result.error);
+            setError(result.error || "Erro ao fazer login com o Google");
         }
         
         setIsLoading(false);
