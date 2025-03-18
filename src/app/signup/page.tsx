@@ -15,13 +15,13 @@ export default function SignUpPage() {
     const [passwordError, setPasswordError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
-    const { user } = useAuth();
+    const { user, isProfileComplete } = useAuth();
 
     useEffect(() => {
-        if (user) {
+        if (user && isProfileComplete) {
             router.push("/dashboard");
         }
-    }, [user, router]);
+    }, [user, isProfileComplete, router]);
 
     useEffect(() => {
         if (confirmPassword && password !== confirmPassword) {
@@ -31,7 +31,7 @@ export default function SignUpPage() {
         }
     }, [password, confirmPassword]);
 
-    if (user) {
+    if (user && isProfileComplete) {
         return null;
     }
 

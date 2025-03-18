@@ -22,16 +22,26 @@ export default function CompleteProfile() {
 
     useEffect(() => {
         const fetchUserData = async () => {
-            if (!user) return;
+            if (!user) {
+                console.log("No user found in fetchUserData");
+                return;
+            }
             
-            const userDoc = await getDoc(doc(db, "users", user.uid));
-            if (userDoc.exists()) {
-                const userData = userDoc.data();
-                if (userData.displayName) {
-                    const [firstName, ...lastNameParts] = userData.displayName.split(" ");
-                    setName(firstName || "");
-                    setSurname(lastNameParts.join(" ") || "");
+            try {
+                const userDoc = await getDoc(doc(db, "users", user.uid));
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    console.log("Fetched user data:", userData);
+                    if (userData.displayName) {
+                        const [firstName, ...lastNameParts] = userData.displayName.split(" ");
+                        setName(firstName || "");
+                        setSurname(lastNameParts.join(" ") || "");
+                    }
+                } else {
+                    console.log("User document does not exist");
                 }
+            } catch (error) {
+                console.error("Error fetching user data:", error);
             }
         };
 
@@ -40,14 +50,48 @@ export default function CompleteProfile() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!user) return;
+        if (!user) {
+            console.error("No user found during submission");
+            setError("Erro de autenticação. Tente fazer login novamente.");
+            return;
+        }
+
+        // Validate required fields
+        if (!name.trim()) {
+            setError("Nome é obrigatório");
+            return;
+        }
+        if (!surname.trim()) {
+            setError("Sobrenome é obrigatório");
+            return;
+        }
+        if (!phone.trim()) {
+            setError("Telefone é obrigatório");
+            return;
+        }
+        if (!birthDate) {
+            setError("Data de nascimento é obrigatória");
+            return;
+        }
+        if (!gender) {
+            setError("Gênero é obrigatório");
+            return;
+        }
 
         setIsLoading(true);
         setError(null);
 
         try {
+            console.log("Submitting form with data:", {
+                name,
+                surname,
+                phone: `${countryCode}${phone}`,
+                birthDate,
+                gender
+            });
+
             const userRef = doc(db, "users", user.uid);
-            await updateDoc(userRef, {
+            const userData = {
                 name: name.trim(),
                 surname: surname.trim(),
                 phone: `${countryCode}${phone.trim()}`,
@@ -55,16 +99,23 @@ export default function CompleteProfile() {
                 gender: gender || null,
                 isProfileComplete: true,
                 updatedAt: new Date().toISOString(),
-            });
+            };
+
+            console.log("Updating user document with:", userData);
+            await updateDoc(userRef, userData);
+            console.log("Profile updated successfully");
 
             router.push("/dashboard");
         } catch (err) {
+            console.error("Detailed error updating profile:", err);
             setError("Erro ao atualizar perfil. Tente novamente.");
-            console.error("Error updating profile:", err);
         } finally {
             setIsLoading(false);
         }
     };
+
+    // Debug render
+    console.log("Current form state:", { name, surname, phone, birthDate, gender, isLoading, error });
 
     return (
         <div className="min-h-screen bg-gray-900 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -76,7 +127,9 @@ export default function CompleteProfile() {
 
                 <form onSubmit={handleSubmit} className="mt-8 space-y-6">
                     {error && (
-                        <div className="text-red-500 text-sm text-center">{error}</div>
+                        <div className="bg-red-900/20 border border-red-500 rounded-md p-3 text-red-400 text-sm text-center">
+                            {error}
+                        </div>
                     )}
                     
                     <div>
