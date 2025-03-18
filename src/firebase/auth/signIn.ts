@@ -1,6 +1,6 @@
 import { signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from "@/firebase/BaseConfig";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 
 export const signInWithGoogle = async () => {
     try {
@@ -8,16 +8,24 @@ export const signInWithGoogle = async () => {
         const result = await signInWithPopup(auth, provider);
         const user = result.user;
         
+        // Check if user document exists
         const userRef = doc(db, "users", user.uid);
-        await setDoc(userRef, {
-            name: user.displayName,
-            email: user.email,
-            phone: user.phoneNumber,
-        });
+        const userDoc = await getDoc(userRef);
+        
+        if (!userDoc.exists()) {
+            // First time sign in - create user document
+            await setDoc(userRef, {
+                displayName: user.displayName || "",
+                email: user.email,
+                isProfileComplete: false,
+                createdAt: new Date().toISOString(),
+            });
+        }
 
         return {
             success: true,
-            user: result.user
+            user: result.user,
+            isNewUser: !userDoc.exists()
         };
     } catch (error: any) {
         if (error.code === 'auth/cancelled-popup-request' || 

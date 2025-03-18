@@ -3,17 +3,17 @@ import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { User } from "firebase/auth";
 
-export const signUpUser = async (email: string, password: string, name: string, surname: string, phone: string) => {
+export const signUpUser = async (email: string, password: string) => {
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
         const userRef = doc(db, "users", user.uid);
         await setDoc(userRef, {
-            name,
-            surname,
-            phone,
-            email: user.email
+            email: user.email,
+            isProfileComplete: false,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
         });
 
         return { success: true, user };

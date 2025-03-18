@@ -22,6 +22,8 @@ const SignUp = () => {
         }
     };
 
+    const publicPaths = ['/', '/signin', '/signup'];
+
     return (
         <div className="p-4 max-2-md mx-auto">
             <h1 className="text-2xl mb-4">Sign Up</h1>

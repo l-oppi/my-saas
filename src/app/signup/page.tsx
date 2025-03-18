@@ -1,40 +1,52 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signUpUser } from "@/firebase/auth/signUp";
 import { useAuth } from "@/context/AuthContext";
-import CountrySelect from "@/components/CountrySelect";
 
 export default function SignUpPage() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [name, setName] = useState("");
-    const [surname, setSurname] = useState("");
-    const [phone, setPhone] = useState("");
-    const [countryCode, setCountryCode] = useState("+55"); // Default to Brazil
+    const [confirmPassword, setConfirmPassword] = useState("");
     const [error, setError] = useState("");
+    const [passwordError, setPasswordError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
     const { user } = useAuth();
 
+    useEffect(() => {
+        if (user) {
+            router.push("/dashboard");
+        }
+    }, [user, router]);
+
+    useEffect(() => {
+        if (confirmPassword && password !== confirmPassword) {
+            setPasswordError("As senhas não coincidem");
+        } else {
+            setPasswordError("");
+        }
+    }, [password, confirmPassword]);
+
     if (user) {
-        router.push("/dashboard");
         return null;
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (passwordError) {
+            return;
+        }
+        
         setIsLoading(true);
         setError("");
 
-        const fullPhone = `${countryCode}${phone.replace(/\D/g, '')}`;
-
         try {
-            const result = await signUpUser(email, password, name, surname, fullPhone);
+            const result = await signUpUser(email, password);
             if (result.success) {
-                router.push("/dashboard");
+                router.push("/signup/complete-profile");
             } else {
                 setError(result.error || "Erro ao criar conta");
             }
@@ -56,42 +68,6 @@ export default function SignUpPage() {
                 <form onSubmit={handleSubmit} className="mt-8 space-y-6">
                     <div className="space-y-4">
                         <input
-                            type="text"
-                            placeholder="Nome"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            className="appearance-none relative block w-full px-3 py-2 border border-purple-700 
-                            placeholder-gray-500 text-gray-200 rounded-md bg-gray-700 focus:outline-none 
-                            focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                            required
-                        />
-                        <input
-                            type="text"
-                            placeholder="Sobrenome"
-                            value={surname}
-                            onChange={(e) => setSurname(e.target.value)}
-                            className="appearance-none relative block w-full px-3 py-2 border border-purple-700 
-                            placeholder-gray-500 text-gray-200 rounded-md bg-gray-700 focus:outline-none 
-                            focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                            required
-                        />
-                        <div className="flex space-x-2">
-                            <CountrySelect
-                                value={countryCode}
-                                onChange={setCountryCode}
-                            />
-                            <input
-                                type="tel"
-                                placeholder="Telefone"
-                                value={phone}
-                                onChange={(e) => setPhone(e.target.value)}
-                                className="appearance-none relative block w-full px-3 py-2 border border-purple-700 
-                                placeholder-gray-500 text-gray-200 rounded-md bg-gray-700 focus:outline-none 
-                                focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                                required
-                            />
-                        </div>
-                        <input
                             type="email"
                             placeholder="Email"
                             value={email}
@@ -101,16 +77,37 @@ export default function SignUpPage() {
                             focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                             required
                         />
-                        <input
-                            type="password"
-                            placeholder="Senha"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="appearance-none relative block w-full px-3 py-2 border border-purple-700 
-                            placeholder-gray-500 text-gray-200 rounded-md bg-gray-700 focus:outline-none 
-                            focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                            required
-                        />
+                        
+                        <div>
+                            <input
+                                type="password"
+                                placeholder="Senha"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                className="appearance-none relative block w-full px-3 py-2 border border-purple-700 
+                                placeholder-gray-500 text-gray-200 rounded-md bg-gray-700 focus:outline-none 
+                                focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                required
+                            />
+                        </div>
+
+                        <div>
+                            <input
+                                type="password"
+                                placeholder="Confirme sua senha"
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                className={`appearance-none relative block w-full px-3 py-2 border 
+                                ${passwordError ? 'border-red-500' : 'border-purple-700'}
+                                placeholder-gray-500 text-gray-200 rounded-md bg-gray-700 focus:outline-none 
+                                focus:ring-2 ${passwordError ? 'focus:ring-red-500' : 'focus:ring-purple-500'} 
+                                focus:border-transparent`}
+                                required
+                            />
+                            {passwordError && (
+                                <p className="mt-1 text-sm text-red-400">{passwordError}</p>
+                            )}
+                        </div>
                     </div>
 
                     {error && <div className="text-red-400 text-sm text-center">{error}</div>}
@@ -118,11 +115,11 @@ export default function SignUpPage() {
                     <div className="space-y-4">
                         <button
                             type="submit"
-                            disabled={isLoading}
+                            disabled={isLoading || !!passwordError}
                             className="group relative w-full flex justify-center py-2 px-4 border border-transparent 
                             text-sm font-medium rounded-md text-white bg-purple-800 hover:bg-purple-700 
                             focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 
-                            transition-colors duration-200 disabled:opacity-50"
+                            transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {isLoading ? "Criando conta..." : "Criar conta"}
                         </button>

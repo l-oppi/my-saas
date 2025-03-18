@@ -1,41 +1,17 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { emailSignIn, signInWithGoogle } from "@/firebase/auth/signIn";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { auth } from "@/firebase/BaseConfig";
 import Link from "next/link";
 
 const SignIn = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState<string | null>(null);
-    const [redirect, setRedirect] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
-    const { user, loading } = useAuth();
-    
-    useEffect(() => {
-        const unsubscribe = auth.onAuthStateChanged((user) => {
-            if (user) {
-                setTimeout(() => {
-                    router.push("/dashboard");
-                }, 0);
-            }
-        });
-
-        return unsubscribe;
-    }, [router]);
-
-    useEffect(() => {
-        if (redirect) {
-            router.push('/dashboard');
-        }
-    }, [redirect, router]);
-
-    if (user && !loading) {
-        router.push("/dashboard");
-    }
+    const { loading } = useAuth();
 
     const handleGoogleSignIn = async () => {
         setIsLoading(true);
@@ -43,9 +19,11 @@ const SignIn = () => {
         const result = await signInWithGoogle();
         
         if (result.success) {
-            setTimeout(() => {
+            if (result.isNewUser) {
+                router.push('/signup/complete-profile');
+            } else {
                 router.push('/dashboard');
-            }, 0);
+            }
         } else {
             setError(result.error);
         }
@@ -55,12 +33,14 @@ const SignIn = () => {
 
     const handleEmailSignIn = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsLoading(true);
         const result = await emailSignIn(email, password);
         if (result.success) {
-            setRedirect(true);
+            router.push('/dashboard');
         } else {
             setError(result.error || "Erro ao fazer login");
         }
+        setIsLoading(false);
     };
 
     if (loading) {
@@ -107,12 +87,13 @@ const SignIn = () => {
                     <div className="space-y-4">
                         <button
                             type="submit"
+                            disabled={isLoading}
                             className="group relative w-full flex justify-center py-2 px-4 border border-transparent 
                             text-sm font-medium rounded-md text-white bg-purple-800 hover:bg-purple-700 
                             focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 
                             transition-colors duration-200"
                         >
-                            Entrar
+                            {isLoading ? "Entrando..." : "Entrar"}
                         </button>
 
                         <div className="text-center">
