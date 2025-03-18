@@ -1,12 +1,24 @@
-import { signOut } from "firebase/auth";
 import { auth } from "@/firebase/BaseConfig";
+import { FirebaseError } from "firebase/app";
+import { getFirebaseErrorMessage } from "@/utils/firebaseErrors";
 
-export const signOutUser = async () => {
+export const signOut = async () => {
     try {
-        await signOut(auth);
+        await auth.signOut();
         return { success: true };
     } catch (error) {
-        console.error("Erro ao fazer logout:", error);
-        return { success: false, error: error instanceof Error ? error.message : "Erro desconhecido" };
+        console.error("Error signing out:", error);
+        
+        if (error instanceof FirebaseError) {
+            return { 
+                success: false, 
+                error: getFirebaseErrorMessage(error.code)
+            };
+        }
+        
+        return { 
+            success: false, 
+            error: "Ocorreu um erro ao sair. Tente novamente" 
+        };
     }
 };

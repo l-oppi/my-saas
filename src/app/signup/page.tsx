@@ -112,7 +112,11 @@ export default function SignUpPage() {
                         </div>
                     </div>
 
-                    {error && <div className="text-red-400 text-sm text-center">{error}</div>}
+                    {error && (
+                        <div className="bg-red-900/20 border border-red-500 rounded-md p-3 text-red-400 text-sm text-center">
+                            {error}
+                        </div>
+                    )}
 
                     <div className="space-y-4">
                         <button

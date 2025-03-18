@@ -2,6 +2,8 @@ import { auth, db } from "@/firebase/BaseConfig";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { User } from "firebase/auth";
+import { FirebaseError } from "firebase/app";
+import { getFirebaseErrorMessage } from "@/utils/firebaseErrors";
 
 export const signUpUser = async (email: string, password: string) => {
     try {
@@ -19,6 +21,17 @@ export const signUpUser = async (email: string, password: string) => {
         return { success: true, user };
     } catch (error) {
         console.error("Error signing up:", error);
-        return { success: false, error: error instanceof Error ? error.message : "An unknown error occurred" };
+        
+        if (error instanceof FirebaseError) {
+            return { 
+                success: false, 
+                error: getFirebaseErrorMessage(error.code)
+            };
+        }
+        
+        return { 
+            success: false, 
+            error: "Ocorreu um erro ao criar sua conta. Tente novamente" 
+        };
     }
 };
